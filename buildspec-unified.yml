@@ -21,10 +21,10 @@ phases:
         if [ "$DEPLOYMENT_TYPE" = "pdf2html" ]; then
           echo "PDF-to-HTML pre-build steps..."
           echo "Environment variables:"
-          echo "  ACCOUNT_ID=$ACCOUNT_ID"
+          echo "  ACCOUNT_ID: [REDACTED] "
           echo "  REGION=$REGION"
-          echo "  BUCKET_NAME=$BUCKET_NAME"
-          echo "  BDA_PROJECT_ARN=$BDA_PROJECT_ARN"
+          echo "  BUCKET_NAME= [REDACTED]"
+          echo "  BDA_PROJECT_ARN= [REDACTED]"
           docker --version
           echo "Current directory contents:"
           ls -la

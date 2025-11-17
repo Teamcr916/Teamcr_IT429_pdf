@@ -84,18 +84,17 @@ phases:
           
           # Set CORS policy (always apply, whether bucket is new or existing)
           echo "Setting CORS policy for bucket..."
-                    aws s3api put-bucket-cors --bucket $BUCKET_NAME --cors-configuration '{
+          aws s3api put-bucket-cors --bucket $BUCKET_NAME --cors-configuration '{
             "CORSRules": [
               {
-                "AllowedHeaders": ["Content-Type", "Authorization", "x-amz-date", "x-amz-security-token"],
+                "AllowedHeaders": ["*"],
                 "AllowedMethods": ["GET", "HEAD", "PUT", "POST"],
                 "AllowedOrigins": ["https://main.d3jk2uc22ijg1r.amplifyapp.com"],
-                "ExposeHeaders": ["ETag"],
+                "ExposeHeaders": ["ETag", "x-amz-request-id", "x-amz-id-2"],
                 "MaxAgeSeconds": 3000
               }
             ]
           }'
-
           echo "CORS policy applied successfully."
           
           # Create ECR repository if it doesn't exist

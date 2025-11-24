@@ -21,10 +21,10 @@ phases:
         if [ "$DEPLOYMENT_TYPE" = "pdf2html" ]; then
           echo "PDF-to-HTML pre-build steps..."
           echo "Environment variables:"
-          echo "  ACCOUNT_ID=$ACCOUNT_ID"
+          echo "  ACCOUNT_ID: [REDACTED] "
           echo "  REGION=$REGION"
-          echo "  BUCKET_NAME=$BUCKET_NAME"
-          echo "  BDA_PROJECT_ARN=$BDA_PROJECT_ARN"
+          echo "  BUCKET_NAME= [REDACTED]"
+          echo "  BDA_PROJECT_ARN= [REDACTED]"
           docker --version
           echo "Current directory contents:"
           ls -la
@@ -88,9 +88,10 @@ phases:
             "CORSRules": [
               {
                 "AllowedHeaders": ["*"],
-                "AllowedMethods": ["GET", "HEAD", "PUT", "POST", "DELETE"],
-                "AllowedOrigins": ["*"],
-                "ExposeHeaders": []
+                "AllowedMethods": ["GET", "HEAD", "PUT", "POST"],
+                "AllowedOrigins": ["https://main.d3jk2uc22ijg1r.amplifyapp.com"],
+                "ExposeHeaders": ["ETag", "x-amz-request-id", "x-amz-id-2"],
+                "MaxAgeSeconds": 3000
               }
             ]
           }'

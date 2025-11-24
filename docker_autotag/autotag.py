@@ -86,6 +86,82 @@ from adobe.pdfservices.operation.pdfjobs.jobs.autotag_pdf_job import AutotagPDFJ
 from adobe.pdfservices.operation.pdfjobs.params.autotag_pdf.autotag_pdf_params import AutotagPDFParams
 from adobe.pdfservices.operation.pdfjobs.result.autotag_pdf_result import AutotagPDFResult
 
+#This is part one of my SQL injection fix
+#Tested and will be uploaded to kevinbranch
+def validate_objid(objid):
+    """Prevents SQL injection"""
+    if not objid or not isinstance(objid, (str, int)):
+        raise ValueError("Invalid objid")
+    objid = str(objid).strip()
+    if len(objid) > 100:
+        raise ValueError("objid too long")
+    dangerous = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'SELECT', '--', ';']
+    for keyword in dangerous:
+        if keyword in objid.upper():
+            raise ValueError(f"Invalid objid: contains {keyword}")
+    return objid
+
+def validate_filepath(filepath):
+    """Prevents path traversal"""
+    if not filepath or not isinstance(filepath, str):
+        raise ValueError("Invalid filepath")
+    filename = os.path.basename(filepath)
+    if '..' in filepath or '..' in filename:
+        raise ValueError("Path traversal detected")
+    if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        raise ValueError("Invalid file extension")
+    return filename
+
+def validate_context(context):
+    """Prevents data corruption"""
+    if not isinstance(context, str):
+        raise ValueError("Invalid context")
+    context = context.replace('\x00', '')
+    if len(context) > 10000:
+        context = context[:10000] + "...[truncated]"
+    return context
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
+#This is part one of my SQL injection fix
+#Tested and will be uploaded to kevinbranch
+def validate_objid(objid):
+    """Prevents SQL injection"""
+    if not objid or not isinstance(objid, (str, int)):
+        raise ValueError("Invalid objid")
+    objid = str(objid).strip()
+    if len(objid) > 100:
+        raise ValueError("objid too long")
+    dangerous = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'SELECT', '--', ';']
+    for keyword in dangerous:
+        if keyword in objid.upper():
+            raise ValueError(f"Invalid objid: contains {keyword}")
+    return objid
+
+def validate_filepath(filepath):
+    """Prevents path traversal"""
+    if not filepath or not isinstance(filepath, str):
+        raise ValueError("Invalid filepath")
+    filename = os.path.basename(filepath)
+    if '..' in filepath or '..' in filename:
+        raise ValueError("Path traversal detected")
+    if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        raise ValueError("Invalid file extension")
+    return filename
+
+def validate_context(context):
+    """Prevents data corruption"""
+    if not isinstance(context, str):
+        raise ValueError("Invalid context")
+    context = context.replace('\x00', '')
+    if len(context) > 10000:
+        context = context[:10000] + "...[truncated]"
+    return context
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -480,20 +556,31 @@ def create_sqlite_db(by_page, filename, images_output_dir, object_ids, image_pat
             # Join all parts with a space.
             context = " ".join(context_parts)
         # Debug prints.
-        print(f"{'<IMAGE INTERESTED>' in context}")
-        print("context:", context)
-        print(" ======================")
-        # Insert the data into the SQLite database.
-        cursor.execute("""
-            INSERT INTO image_data (objid, img_path, context)
-            VALUES (?, ?, ?)
-        """, (
-            current_candidate["objid"],
-            current_candidate["filePaths"][0].split("/")[-1],
-            context
-        ))
+      
+        
+        #Part 2 of the SQL injection FIX
+        #Tested and will be uploaded to kevinbranch
+        try:       
+            cursor.execute("""
+                INSERT INTO image_data (objid, img_path, context)
+                VALUES (?, ?, ?)
+            """, (
+                validate_objid(current_candidate["objid"]),
+                validate_filepath(current_candidate["filePaths"][0]),
+                validate_context(context)
+            ))
+        except ValueError as e:
+            logging.error(f'Validation Failed: {e}')
+            continue
+
+        except Exception as e:
+            logging.error(f'Error: {e}')
+            raise
+
         print("Added in the database: ", current_candidate["objid"],
             current_candidate["filePaths"][0].split("/")[-1])
+        
+
     conn.commit()
     conn.close()
     logging.info(f'Filename : {filename} | SQLite DB created with image data')
